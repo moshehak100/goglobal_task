@@ -1,0 +1,116 @@
+Part 1 - question 1
+-------------------
+inside IncludeInFinalResults we use Switch-case over parameter from type of RoomAvailableOption enum,
+in case we will add more values to this enum we may forgot to add new case logic to this Switch-case and we reach the default case that return true
+true is not always the correct result for the new case we add and we will have no idea that we are not getting the correct result
+
+solution 1: (minimal solution if we don't want to make any refactoring)
+we should throw an error in case we reach the default case
+
+solution 2: (better solution)
+we should use Strategy Design Pattern
+
+public interface IRoomAvailableAfterEnforcedOption
+{
+    bool IsAvailable(bool roomIsAvailable);
+}
+
+class RoomAvailableEnforcedAll : IRoomAvailableAfterEnforcedOption
+{ 
+    public bool IsAvailable(bool roomIsAvailable)
+    {
+        return true;
+    }
+}
+
+class RoomAvailableEnforcedAvailableOnly : IRoomAvailableAfterEnforcedOption
+{ 
+    public bool IsAvailable(bool roomIsAvailable)
+    {
+        return roomIsAvailable;
+    }
+}
+
+class RoomAvailableEnforcedNotAvailableOnly : IRoomAvailableAfterEnforcedOption
+{ 
+    public bool IsAvailable(bool roomIsAvailable)
+    {
+        return roomIsAvailable;
+    }
+}
+
+public class RoomSearchFilter
+{
+    IRoomAvailableAfterEnforcedOption enforcedOption;
+    public RoomSearchFilter(IRoomAvailableAfterEnforcedOption enforcedOption)
+    {
+        this.enforcedOption = enforcedOption;
+    }
+    public bool IncludeInFinalResults(Room room)
+    {
+        bool roomIsAvailable = CheckIfRoomAvailable(room);
+        return enforcedOption.IsAvailable(roomIsAvailable);
+    }
+}
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+
+Part 1 - question 2
+-------------------
+
+public class DBUtils {
+	static public String GetNotNullValueWithDefault(object value, string defaultVal)
+	{
+		if (value != DBNull.Value && value != null)
+		{
+			return value.ToString();
+		}
+		else
+		{
+			return defaultVal;
+		}
+	}
+}
+
+public User GetUserFromDB(int userId){
+    User user = new User();
+    user.UserId = userId;
+    DataRow dr = DataRepository.GetUserById(userId);
+
+    user.FirstName = DBUtils.GetNotNullValueWithDefault(userRow["FirstName"], user.FirstName);
+    user.LastName = DBUtils.GetNotNullValueWithDefault(userRow["LastName"], user.LastName);
+    user.Address = DBUtils.GetNotNullValueWithDefault(userRow["Address"], user.Address);
+    user.CityName = DBUtils.GetNotNullValueWithDefault(userRow["CityName"], user.CityName);
+    user.CountryName = DBUtils.GetNotNullValueWithDefault(userRow["CountryName"], user.CountryName);
+    user.Email = DBUtils.GetNotNullValueWithDefault(userRow["Email"], user.Email);
+
+    return user;
+}
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+
+Part 3 - sql
+question 1:
+
+SELECT ACCOUNTS.BANK_ID, ACCOUNTS.BRANCH_ID, ACCOUNTS.ACCOUNT_NUM, ACCOUNTS.CURRENCY, AMOUNTS.AMOUNT
+FROM ACCOUNTS
+INNER JOIN AMOUNTS ON AMOUNTS.ACCOUNT_REC = CONCAT(ACCOUNTS.BANK_ID," ",ACCOUNTS.BRANCH_ID," ", ACCOUNTS.ACCOUNT_NUM)
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+
+Part 3 - sql
+question 2:
+
+in the first select of CALC_AMT we use "SELECT DISTINCT MAX(A.AMT)" there is no need of DISTINCT here because we take the MAX value of the results set
+with or without DISTINCT we will get the same value, the DISTINCT requirement spent time becase if we try to simplify DISTINCT flow it will contains the following steps
+it builds your overall result set (including duplicates) based on your FROM and WHERE clauses
+it sorts that result set based on the fields you want to return
+it removes any duplicate values in those fields
+
+when we will remove the DISTINCT clause we will get the same results in better time
